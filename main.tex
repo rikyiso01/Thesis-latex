@@ -1,0 +1,87 @@
+% masterthesis for Computer Science
+% masterthesis_ceng for Computer Engineering
+% use the [nocoverpage] option to speed up compilation by skipping the cover page
+\documentclass{masterthesis}
+
+% the configuration is in the preamble.tex file, read it and modify it to change
+% the document appearance and included packages
+\input{preamble}
+
+% by default, we use the biblatex package to manage the bibliography
+% if you prefer to use bibtex, comment the following line and uncomment the
+% relevant lines at the end of the document
+\addbibresource{bib.bib}
+
+
+\acrodef{DIBRIS}{\textit{dipartimento di informatica, bioingegneria, robotica e ingegneria dei sistemi}}
+
+
+\acrodef{LLM}{large language model}
+
+
+\begin{document}
+
+\title{Automated Android application exploration}
+
+\author{Riccardo Isola}
+
+\advisor{Matteo Dell'Amico}
+
+\examiner{Marina Ribaudo}
+
+\maketitle
+
+\begin{abstract}
+The project aims to leverage Multimodal Large Language Models (MLLMs) to
+enhance code exploration of Android applications by enabling intelligent
+interaction with their Graphical User Interface (GUI). Traditional
+static analysis and manual code reviews can be inefficient and
+time-consuming, particularly in large, complex applications. This
+approach integrates MLLMs with computer vision and natural language
+processing to analyze the app's GUI dynamically, extracting UI
+components, inferring their functionality, and linking them to
+corresponding code segments. By interacting with the app in real-time --
+simulating user actions such as button presses and text inputs -- the
+model can generate structured insights about code behavior, identify
+security vulnerabilities, and assist developers in debugging.
+\end{abstract}
+
+\tableofcontents
+
+
+\chapter{introduction}
+\label{sec:introduction}
+\include{introduction.tex}
+
+
+\chapter{background}
+\label{sec:background}
+\include{background.tex}
+
+
+\chapter{related}
+\label{sec:related}
+\include{related.tex}
+
+
+\chapter{method}
+\label{sec:method}
+\include{method.tex}
+
+
+\chapter{results}
+\label{sec:results}
+\include{results.tex}
+
+
+\chapter{conclusion}
+\label{sec:conclusion}
+\include{conclusion.tex}
+
+
+% Bibliography using biber; comment this and uncomment the following lines to use bibtex instead
+\printbibliography
+% \bibliographystyle{alphaurl}
+% \bibliography{bib}
+
+\end{document}
