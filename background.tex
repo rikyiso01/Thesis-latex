@@ -1,21 +1,110 @@
-This chapter provides the necessary background information to understand
-the content of your thesis. The goal is to make your thesis
-\emph{self-contained}: the reader, who you can assume will be a fellow
-Computer Science student, should be able to understand your work without
-having to refer to external sources. Of course, you should reference the
-sources you used to write this chapter and references to documents that
-the reader can use to know more about those topics.
+\subsection{Native Android Application
+Structure}\label{native-android-application-structure}
 
-Don't include information that is not necessary to understand your work.
-If something is complementary to your work, but not necessary to
-understand it, you can include it in the Related Work chapter
-(\Cref{sec:related}).
+A Native Android Application is composed of three main components:
 
-The Background chapter contains information about work that
-\emph{you didn't do}. The work you did should be decscribed in the
-Methodology chapter (\Cref{sec:method}) instead.
+\begin{itemize}
+\tightlist
+\item
+  The resources like images and audio files required by the application
+\item
+  The code of the application
+\item
+  A manifest called the Android Manifest which describes the permissions
+  required by the application, the entry-point of the application and
+  the various activities which the application offer
+\end{itemize}
 
-The amount of information you will need to present in this Chapter can
-vary a lot between theses. In some cases, you will have no or very
-little need for a Background chapter; in that case, it may make sense to
-move this information to a section in the Related Work chapter.
+An activity is a single page in the application which can show some
+graphics elements called views.
+
+An application can contain one or more activities and applications can
+show different pages in the same activity by using a view called
+Fragment which allows to easily define multiple layouts without using
+multiple activities.
+
+In order to access sensitive data and perform critical actions an
+application must declare a permission in its Android Manifest and for
+the most critical ones, obtain explicit permission from the user.
+
+Applications are distributed using the apk file format which is a signed
+zip.
+
+\subsection{Common Android Malware
+structure}\label{common-android-malware-structure}
+
+Since in normal Android devices the user does not have access to the
+root user and a privilege escalation requires the usage of a 0-day,
+common Android malwares have to declare and obtain explicit permissions
+from the user in order to have access to high value informations.
+
+Between the available permissions, the most critical one is the
+accessibility service, which allows an application to read the screen
+content and perform actions on behalf of the user.
+
+Google Play Store, the main application distribution system in the
+Android ecosystem, performs strict checks over the applications' usage
+of the declared permissions and this prevents malwares from declaring
+the required permissions in their manifest.
+
+To bypass the security checks of the Google Play Store malwares
+typically open the system browser on a controlled link, this action
+doesn't require any permission. On the controlled link a download of
+another application immediately starts
+
+\subsection{Security application scanner
+architecture}\label{security-application-scanner-architecture}
+
+A security application scanner typically is divided into three
+components:
+
+\begin{itemize}
+\item
+  the environment: which is a simulated environment as close as possible
+  to the real environment in which the application under test is
+  executed by the scanner to analyze the behaviour
+\item
+  the crawler: which interact and stimulated the application in order to
+  explore as many different states as possible
+\item
+  the scanner: which analyzes the behaviour of the application during
+  the crawler execution and interacts with it after the crawling to
+  detect the vulnerabilities
+\end{itemize}
+
+\subsection{Current crawlers}\label{current-crawlers}
+
+Crawlers while exploring the application build a model, which is a graph
+containing as nodes the different states of the application and as edges
+the actions performed to reach that state from a previous one. For
+deciding the next edge to explore crawlers typically employ one or a
+combination of these strategies:
+
+\begin{itemize}
+\tightlist
+\item
+  depth first search
+\item
+  breadth first search
+\item
+  random selection
+\item
+  weighted selections, where the weights are defined with a formula or
+  by using reinforced learning models
+\end{itemize}
+
+\subsection{Crawling problem}\label{crawling-problem}
+
+Mobile applications often have their main functionalities displayied in
+deep states, this is due to the presence login screens and sequence of
+steps which must be undertake by the user.
+
+The previous strategies are often not able to reach these deep states
+due to their missing knowledge of common patterns in mobile
+applications.
+
+This limits the ability of dynamic security scanning tools to only
+superficial states.
+
+To solve this problem it is possible to employ large language models
+since they pack together knowledge from common applications.
