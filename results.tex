@@ -1,1 +1,103 @@
+\section{Model comparison}\label{model-comparison}
 
+For selecting the best model for the task we have built a dataset
+composed of screenshots, tasks to execute and possible actions to be
+chosen by the model. The model using the same prompt as AppAgent
+receives as input the screenshot and the task to execute and must answer
+with the action to execute. A reply is considered correct if the
+selected action is in the list of possible valid actions. The dataset is
+composed half by screenshots of manually selected applications and half
+by images obtained from the Rico dataset. The task the possible correct
+actions have been added manually by a human.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  Gemini Pro 2.5: 89\% 89\% 89\% 89\% 89\%
+\item
+  gpt-4o: 85\% 86\% 86\% 86\% 87\%
+\item
+  Gemini Flash: 83\% 83\% 83\% 83\% 83\%
+\item
+  llama3.2-vision-instruct:90b: 52\% 52\% 52\% 52\% 52\%
+\item
+  llama3.2-vision:90b: 39\% 40\% 40\% 40\% 40\%
+\item
+  llama3.2-vision:11b: 32\% 32\% 32\% 32\% 32\%
+\item
+  llava:34b: 27\% 27\% 27\% 27\% 27\%
+\end{enumerate}
+
+From the results we evince that
+
+\begin{itemize}
+\tightlist
+\item
+  More powerful models achieve better results
+\item
+  Open source models are a lot weaker than their proprietary counterpart
+\end{itemize}
+
+\section{Navigator strategy
+comparison}\label{navigator-strategy-comparison}
+
+We compared the different strategies together to find the best one to
+use for our experiments. We used gpt-4o for obtaining these benchmarks.
+
+\begin{longtable}[]{@{}llll@{}}
+\toprule\noalign{}
+strategy & breezyweather & moneywallet & tasks \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+breadth & & (10.53\%,282) & (2.56\%,236) \\
+compressed & (7.41\%,267) & (23.68\%,508) & (2.56\%,236) \\
+depth & (11.11\%,563) & (23.68\%,503) & (2.56\%,236) \\
+\textbf{mixed} & \textbf{(14.81\%,554)} & (21.05\%,388) &
+\textbf{(2.56\%,292)} \\
+random & (7.41\%,242) & (23.68\%,474) & (2.56\%,236) \\
+\textbf{weighted} & (7.41\%,239) & \textbf{(28.95\%,730)} &
+(2.56\%,236) \\
+\end{longtable}
+
+\begin{longtable}[]{@{}llll@{}}
+\toprule\noalign{}
+strategy & breezyweather & moneywallet & tasks \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+\textbf{breadth} & \textbf{(18.52\%,154)} & (13.16\%,135) & \\
+compressed & (7.41\%,56) & (23.68\%,147) & \\
+\textbf{depth} & (11.11\%,102) & \textbf{(26.32\%,362)} &
+(17.95\%,1205) \\
+mixed & (11.11\%,83) & (26.32\%,304) & \\
+random & (14.81\%,203) & (21.05\%,221) & \\
+weighted & (14.81\%,137) & (21.05\%,230) & \\
+\end{longtable}
+
+From these results we can't find the best strategy, the randomness in
+the models make them difficult to compare. We could have run more tests,
+but the limits of our resources made it impossible to do further
+analysis in this regard.
+
+\section{Profiling}\label{profiling}
+
+We have profiled the tool to estimate the amount of time it takes to
+explore an application
+
+\subsection{Parallelization}\label{parallelization}
+
+\section{Task convergence}\label{task-convergence}
+
+The number of tasks converges in an application
+
+\section{Application exploration}\label{application-exploration}
+
+\subsection{MoneyWallet}\label{moneywallet}
+
+\subsection{Tasks.org}\label{tasks.org}
+
+\subsection{breezyWeather}\label{breezyweather}

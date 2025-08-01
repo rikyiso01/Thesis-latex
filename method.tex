@@ -1,1 +1,203 @@
+\section{Architecture}\label{architecture}
 
+We have decided to use an architecture similar to the YuraScanner's one:
+
+\begin{figure}
+\centering
+\includesvg[width=15cm,height=\textheight,keepaspectratio]{figs/.inline-figs/pandocplot9034245466538570907.svg}
+\caption{High level architecture}
+\end{figure}
+
+Everything is dockerized to allow easy deployment. A dockerized Android
+Emulator is used as environment for running the applications. An init
+container is used for downloading the application before starting.
+
+\section{Task Executor}\label{task-executor}
+
+The first component we have decided to implement is the task executor.
+We have forked and refactored AppAgent in order to satisfy our
+requirements as task executor.
+
+\subsection{Structured output}\label{structured-output}
+
+The bridge component of the original AppAgent parses the textual output
+of the model to decide the action to pass to the actuator. This causes
+errors when the models allucinates due to the non-structured nature of
+the response. To solve this we have decided to use the structured output
+support of many models. We have modeled the expected response in a JSON
+schema and use it to model the response in order to avoid parsing
+errors.
+
+\subsection{New actions}\label{new-actions}
+
+New actions have been added to our fork of AppAgent to support a broader
+range of tasks
+
+\subsubsection{Registration and login
+support}\label{registration-and-login-support}
+
+Action to insert a Hard-coded email and password to remove the problem
+of the model that forgets previously used credentials
+
+\subsubsection{Mail one-time-token
+support}\label{mail-one-time-token-support}
+
+Action to wait for a one-time-token received on an external mail server
+which is accessed using IMAP. The token is delivered via an MQTT broker
+by a sidecar container which listens for incoming emails. Since some
+verification email only have a clickable link and no code, a headless
+Chromium instance is used to open every link present in the email.
+
+For extracting the token from the email, the body of the email is passed
+to an LLM. Since some email have a HTML body, to simplify the job of the
+LLM, the following pipeline is used to remove useless elements from the
+body: - weasyprint: to render the html to a pdf removing invisible
+elements - pdftotext: to remove styling elements - llm: to parse the
+resulting text
+
+\subsubsection{SMS one-time-token
+support}\label{sms-one-time-token-support}
+
+Action to wait for a one-time-token received via SMS. The token is
+delivered as for the mail one-time-token via a MQTT broker by a sidecar
+container. The container connects to a remote API which lists all the
+messages received by a phone number used only for these experiments.
+
+\subsubsection{Wait action}\label{wait-action}
+
+Add a wait action which is used to allow the model to skip making an
+action to wait for some action to finish in the application like a
+download
+
+\section{Screen detection}\label{screen-detection}
+
+For detecting new states of the application we use the xml dump of the
+current layout with some elements removed.
+
+\section{Looping}\label{looping}
+
+Instead of generating the tasks starting from the home page, we generate
+and update the list of tasks every time we detect a new state
+
+\subsection{Model selection}\label{model-selection}
+
+AppAgent by default supports only OpenAi. In our fork we have added
+support for different LLM providers by using LiteLLM. This allows us to
+compare and select a more efficient and less expensive model.
+
+\section{Task extractor}\label{task-extractor}
+
+For each new screen a set of new tasks is generated starting from the
+screenshot
+
+\section{Navigator controller}\label{navigator-controller}
+
+The controller is the component that joins the task extraction and the
+task executor. Its job is to select the next task to execute and prepare
+the environment for the task executor The exploration is finished when a
+certain threshold of completed tasks has been reached
+
+\subsection{Navigator graph}\label{navigator-graph}
+
+For deciding the next action and collect results a model of the
+application is built which we call Navigation Graph. The Navigation
+Graph is a multi-directed graph due to the possibility of different
+actions to reach the same screen.
+
+\subsubsection{Nodes}\label{nodes}
+
+A node in the navigation graph is a state of the application which in a
+native android application corresponds to the pair activity name and xml
+dump of the current layout. To dump the current layout of the
+application we used at first ADB dump which produces an XML. Due to its
+slowness (2.6 seconds average per call) we decided to switch to
+uiautomator2 which is a program that interacts with the automation api
+of the device to allow taking dump and screenshot without every time
+spawning a new process from scratch.
+
+Each node has a list of possible tasks associated with it, this allows
+the task executor to start in the correct state, to avoid starting in a
+state where it is impossible to complete the task
+
+\paragraph{Nodes similarity}\label{nodes-similarity}
+
+It is interesting to detect similar nodes, for this we have decided to
+use a locality sensitive hash which allows to easily compare the layout
+of different nodes to detect similarities. As locality sensitive hash we
+have decided to use tlsh.
+
+\subsubsection{Edges}\label{edges}
+
+An edge of the navigation graph is a directed edge which connects two
+states of the application. The edge has as label the actions executed to
+reach the new state.
+
+\paragraph{Edge stability}\label{edge-stability}
+
+Some applications have elements which depend not only on internal states
+but also external factors. Due to the same action in the same state can
+cause a different new state. To mark this in the navigation graph, an
+edge can be marked as stable or unstable. An edge is marked as stable if
+all other edges starting from the same node have a different sequence of
+actions otherwise it is marked as unstable.
+
+\subsubsection{Graph compression}\label{graph-compression}
+
+It is possible to obtain a compressed representation of the graph by
+condensing together similar nodes into one. This causes previously
+unstable edges to become stable.
+
+\paragraph{Compression algorithms}\label{compression-algorithms}
+
+For compressing the nodes together we have decided to hdbscan.
+
+\subsection{Action selection
+algorithm}\label{action-selection-algorithm}
+
+For selecting the next task to execute we have defined different
+selection strategies:
+
+\subsubsection{Depth first}\label{depth-first}
+
+We select a task from the current node. If the current node is not in
+the target application, a previous node in the application is used.
+
+\subsubsection{Breadth first}\label{breadth-first}
+
+We select a task from a node which has available tasks starting from the
+entry point of the application.
+
+\subsubsection{Random}\label{random}
+
+A random node is selected
+
+\subsubsection{Random compressed}\label{random-compressed}
+
+Similar to the random algorithm but hdbscan is used to compress similar
+nodes
+
+\subsubsection{Weight}\label{weight}
+
+The following formula is used for deciding the next node to select a
+task from:
+
+\(execution\_weight(e)=\frac{C_e}{F_e}\)
+
+\begin{itemize}
+\tightlist
+\item
+  \(C_e\): Number of widget without any interaction on them
+\item
+  \(F_e\): Number of times a node has been passed over
+\end{itemize}
+
+\section{Exploration scoring}\label{exploration-scoring}
+
+To evaluate our results in exploring an application we have decided to
+define a black box metric for the exploration. Our metric is composed of
+two components: - percentage of explored activities: - the total number
+of activities is obtained by parsing the Android Manifest inside the APK
+- the current activity is obtained using adb - sum of maximum difference
+of tlsh of states in each activity: 1. we divide the nodes by activity,
+and we compare each node in an activity with each other to obtain the
+maximum tlsh difference 2. then we sum all the maximum differences.

@@ -14,12 +14,13 @@
       let
         pkgs = nixpkgs.legacyPackages.${system};
         tex = pkgs.texlive.combine {
-          inherit (pkgs.texlive) scheme-minimal latex-bin latexmk biblatex infwarerr ltxcmds kvsetkeys l3packages tools acronym bigfoot xstring xcolor hyperref cleveref booktabs epstopdf-pkg;
+          inherit (pkgs.texlive) scheme-minimal latex-bin latexmk biblatex infwarerr ltxcmds kvsetkeys l3packages tools acronym bigfoot xstring xcolor hyperref cleveref booktabs epstopdf-pkg svg catchfile transparent pgf;
         };
         dependencies = [
           tex
           pkgs.biber
           pkgs.gnumake
+          pkgs.inkscape
         ];
         compile = pkgs.writeShellApplication {
           name = "compile";
